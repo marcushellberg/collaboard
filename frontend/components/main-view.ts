@@ -14,6 +14,7 @@ import '@vaadin/vaadin-tabs/theme/lumo/vaadin-tabs';
 import '@vaadin/vaadin-button';
 import '@vaadin/vaadin-text-field';
 import 'a-avataaar';
+import { classMap } from 'lit-html/directives/class-map.js';
 import { CSSModule } from '@vaadin/flow-frontend/css-utils';
 import { appState } from '../state/app-state';
 import { MobxLitElement } from '@adobe/lit-mobx';
@@ -33,6 +34,9 @@ export class MainView extends MobxLitElement {
         <header slot="navbar" theme="dark">
           <vaadin-drawer-toggle></vaadin-drawer-toggle>
           <h1>${board.name ? board.name : 'Create or select a board'}</h1>
+          <div class="spinner ${classMap({
+            active: appState.loading,
+          })}" >Loading.</div>
           <a href="/logout">Log out</a>
           <a-avataaar identifier=${user.name}></a-avataaar>
         </header>
@@ -80,6 +84,9 @@ export class MainView extends MobxLitElement {
         </div>
         <slot></slot>
       </vaadin-app-layout>
+      <div class="error-notification" @click=${
+        this.dismissError
+      } ?hidden=${!appState.error}>${appState.error}</div>
     `;
   }
 
@@ -109,6 +116,10 @@ export class MainView extends MobxLitElement {
     return 0;
   }
 
+  dismissError() {
+    appState.setError('');
+  }
+
   static get styles() {
     return [
       CSSModule('lumo-typography'),
@@ -118,6 +129,7 @@ export class MainView extends MobxLitElement {
         :host {
           display: block;
           height: 100%;
+          position: relative;
         }
 
         header {
@@ -201,6 +213,39 @@ export class MainView extends MobxLitElement {
           font-size: 1em;
           padding-bottom: var(--lumo-space-xs);
           border-bottom: 1px solid var(--lumo-contrast-20pct);
+        }
+
+        @keyframes spinner {
+          from {
+            opacity: 0;
+          }
+          to {
+            opacity: 1;
+          }
+        }
+
+        .spinner {
+          opacity: 0;
+          margin-left: var(--lumo-space-xl);
+        }
+
+        .spinner.active {
+          animation: spinner 1s 1s;
+        }
+
+        .error-notification {
+          position: absolute;
+          z-index: 10;
+          top: 0;
+          left: 50%;
+          transform: translateX(-50%);
+          padding: var(--lumo-space-s) var(--lumo-space-m);
+          background-color: var(--lumo-base-color);
+          color: var(--lumo-error-text-color);
+          font-weight: 500;
+          border-bottom-left-radius: var(--lumo-border-radius);
+          border-bottom-right-radius: var(--lumo-border-radius);
+          cursor: pointer;
         }
       `,
     ];

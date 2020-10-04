@@ -53,4 +53,20 @@ public class BoardEndpoint {
     boardRepo.save(board);
     cardRepo.delete(deletedCard);
   }
+
+  // public Flux<BoardUpdate> subscribeToBoardUpdates(String boardId){
+
+  // }
+
+  public void joinBoard(String username, String boardId) {
+  }
+
+  public void leaveBoard(String username, String boardId) {
+  }
+
+  public void lockCard(String username, String cardId) {
+  }
+
+  public void releaseCard(String username, String cardId) {
+  }
 }

@@ -57,7 +57,8 @@ export class BoardCard extends LitElement {
       border: 1px solid var(--lumo-shade-10pct);
     }
 
-    :host(.dragging) {
+    :host(.dragging),
+    :host([readonly]) {
       opacity: 0.5;
     }
 

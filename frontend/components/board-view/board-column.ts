@@ -39,7 +39,11 @@ export class BoardCard extends LitElement {
       <div class="cards">
         ${this.cards.map(
           (card) => html`
-            <board-card .card=${card} draggable="true"></board-card>
+            <board-card
+              .card=${card}
+              ?readonly=${card.id === 'pending'}
+              draggable="true"
+            ></board-card>
           `
         )}
       </div>

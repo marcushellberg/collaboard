@@ -10,6 +10,8 @@ const USERNAME_KEY = 'username';
 class AppState {
   public user: User = UserModel.createEmptyValue();
   public boards: BoardInfo[] = [];
+  public loading = false;
+  public error = '';
   public boardState = boardState;
 
   constructor() {
@@ -18,14 +20,32 @@ class AppState {
   }
 
   async init() {
-    this.setBoards(await getBoards());
+    this.loadBoards();
     const username = localStorage.getItem(USERNAME_KEY);
     if (username) this.login(username);
   }
 
+  private async loadBoards() {
+    this.setLoading(true);
+    try {
+      this.setBoards(await getBoards());
+    } catch (e) {
+      this.setError('Failed to load boards');
+    } finally {
+      this.setLoading(false);
+    }
+  }
+
   async login(name: string) {
-    this.setUser(await createOrLogin(name));
-    localStorage.setItem(USERNAME_KEY, name);
+    this.setLoading(true);
+    try {
+      this.setUser(await createOrLogin(name));
+      localStorage.setItem(USERNAME_KEY, name);
+    } catch (e) {
+      this.setError('Failed to load user');
+    } finally {
+      this.setLoading(false);
+    }
   }
 
   logout() {
@@ -46,9 +66,24 @@ class AppState {
   }
 
   async createBoard(boardName: string) {
-    const created = await createBoard(boardName);
-    this.setBoards([...this.boards, created]);
-    this.boardState.findBoard(created.id);
+    this.setLoading(true);
+    try {
+      const created = await createBoard(boardName);
+      this.setBoards([...this.boards, created]);
+      this.boardState.findBoard(created.id);
+    } catch (e) {
+      this.setError('Failed to create board');
+    } finally {
+      this.setLoading(false);
+    }
+  }
+
+  setLoading(loading: boolean) {
+    this.loading = loading;
+  }
+
+  setError(msg: string) {
+    this.error = msg;
   }
 }
 
