@@ -31,6 +31,12 @@ public class BoardEndpoint {
     return new BoardInfo(boardRepo.save(new Board(name)));
   }
 
+  public void deleteBoard(String boardId) {
+    var board = boardRepo.findById(boardId).orElseThrow();
+    cardRepo.deleteAll(board.getCards());
+    boardRepo.delete(board);
+  }
+
   public Board findBoard(String id) {
     return boardRepo.findById(id).orElseThrow();
   }

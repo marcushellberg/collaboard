@@ -1,10 +1,15 @@
 import User from '../generated/com/vaadin/demo/collaboard/model/User';
-import { makeAutoObservable } from 'mobx';
-import { createBoard, getBoards } from '../generated/BoardEndpoint';
+import { makeAutoObservable, runInAction } from 'mobx';
+import {
+  createBoard,
+  deleteBoard,
+  getBoards,
+} from '../generated/BoardEndpoint';
 import UserModel from '../generated/com/vaadin/demo/collaboard/model/UserModel';
 import { createOrLogin } from '../generated/UserEndpoint';
 import BoardInfo from '../generated/com/vaadin/demo/collaboard/endpoints/BoardInfo';
 import { boardState } from './board-state';
+import BoardModel from '../generated/com/vaadin/demo/collaboard/model/BoardModel';
 
 const USERNAME_KEY = 'username';
 class AppState {
@@ -75,6 +80,23 @@ class AppState {
       this.setError('Failed to create board');
     } finally {
       this.setLoading(false);
+    }
+  }
+
+  async deleteBoard(boardId: string) {
+    const deleted = this.boards.find((board) => board.id === boardId);
+    if (deleted) {
+      this.setLoading(true);
+      this.boards = this.boards.filter((board) => board.id !== boardId);
+      try {
+        await deleteBoard(boardId);
+        this.boardState.setBoard(BoardModel.createEmptyValue());
+      } catch (e) {
+        this.setError('Failed to delete board');
+        runInAction(() => this.boards.push(deleted));
+      } finally {
+        this.setLoading(false);
+      }
     }
   }
 

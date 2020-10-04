@@ -14,6 +14,8 @@ import '@vaadin/vaadin-tabs/theme/lumo/vaadin-tabs';
 import '@vaadin/vaadin-button';
 import '@vaadin/vaadin-text-field';
 import 'a-avataaar';
+import '@polymer/iron-icon';
+import '@vaadin/vaadin-icons';
 import { classMap } from 'lit-html/directives/class-map.js';
 import { CSSModule } from '@vaadin/flow-frontend/css-utils';
 import { appState } from '../state/app-state';
@@ -58,8 +60,15 @@ export class MainView extends MobxLitElement {
                 >
                   ${boards.map(
                     (board) => html`
-                      <vaadin-tab>
+                      <vaadin-tab class="board-tab">
                         <a href="/${board.id}" tabindex="-1">${board.name}</a>
+                        <vaadin-button
+                          class="delete-button"
+                          theme="tertiary icon"
+                          @click=${() => this.deleteBoard(board.id)}
+                        >
+                          <iron-icon icon="vaadin:close-circle-o"></iron-icon>
+                        </vaadin-button>
                       </vaadin-tab>
                     `
                   )}</vaadin-tabs
@@ -92,6 +101,10 @@ export class MainView extends MobxLitElement {
 
   private updateBoardName(e: { target: HTMLInputElement }) {
     this.newBoardName = e.target.value;
+  }
+
+  private deleteBoard(boardId: string) {
+    appState.deleteBoard(boardId);
   }
 
   private handleEnterSumbit(e: KeyboardEvent) {
@@ -246,6 +259,15 @@ export class MainView extends MobxLitElement {
           border-bottom-left-radius: var(--lumo-border-radius);
           border-bottom-right-radius: var(--lumo-border-radius);
           cursor: pointer;
+        }
+
+        .board-tab .delete-button {
+          opacity: 0;
+          transform: opacity 0.25s;
+        }
+
+        .board-tab:hover .delete-button {
+          opacity: 1;
         }
       `,
     ];

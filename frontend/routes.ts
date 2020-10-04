@@ -50,6 +50,9 @@ autorun(() => {
   if (boardState.board.id) {
     Router.go('/' + boardState.board.id);
     document.title = boardState.board.name;
+  } else {
+    Router.go('/');
+    document.title = 'CollaBoard';
   }
 });
 
