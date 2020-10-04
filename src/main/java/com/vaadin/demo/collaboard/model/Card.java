@@ -2,11 +2,11 @@ package com.vaadin.demo.collaboard.model;
 
 import java.time.LocalDateTime;
 
-import org.bson.types.ObjectId;
 import org.springframework.data.annotation.LastModifiedDate;
 import org.springframework.data.mongodb.core.mapping.Document;
 
 import lombok.Data;
+import lombok.EqualsAndHashCode;
 import lombok.NoArgsConstructor;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
@@ -15,8 +15,11 @@ import lombok.RequiredArgsConstructor;
 @Document
 @RequiredArgsConstructor
 @NoArgsConstructor
+@EqualsAndHashCode(onlyExplicitlyIncluded = true)
 public class Card {
-  private String id = ObjectId.get().toString();
+
+  @EqualsAndHashCode.Include
+  private String id;
 
   @NonNull
   private String content;

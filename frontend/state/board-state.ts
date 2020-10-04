@@ -23,6 +23,10 @@ class BoardState {
     this.board = board;
   }
 
+  addCard(card: Card) {
+    this.board.cards.push(card);
+  }
+
   async findBoard(id: string) {
     try {
       this.setBoard(await findBoard(id));
@@ -33,7 +37,7 @@ class BoardState {
 
   async createCard(newCardContent: string, status: Status) {
     // TODO: how can I get only the updated embedded document from the backend
-    this.setBoard(
+    this.addCard(
       await createCard(
         this.board.id,
         newCardContent,
@@ -50,7 +54,7 @@ class BoardState {
         card.id === newCard.id ? newCard : card
       );
       try {
-        await updateCard(this.board.id, newCard);
+        await updateCard(newCard);
       } catch (e) {
         // undo update on failure
         this.board.cards = this.board.cards.map((card) =>

@@ -1,10 +1,10 @@
 package com.vaadin.demo.collaboard.endpoints;
 
-import java.time.LocalDateTime;
 import java.util.List;
 import java.util.stream.Collectors;
 
 import com.vaadin.demo.collaboard.db.BoardRepo;
+import com.vaadin.demo.collaboard.db.CardRepo;
 import com.vaadin.demo.collaboard.model.Board;
 import com.vaadin.demo.collaboard.model.Card;
 import com.vaadin.demo.collaboard.model.Status;
@@ -19,47 +19,38 @@ import lombok.RequiredArgsConstructor;
 @AnonymousAllowed
 @RequiredArgsConstructor
 public class BoardEndpoint {
-  final BoardRepo repo;
+  final BoardRepo boardRepo;
+  final CardRepo cardRepo;
   final MongoTemplate template;
 
   public List<BoardInfo> getBoards() {
-    return repo.findAll().stream().map(BoardInfo::new).collect(Collectors.toList());
+    return boardRepo.findAll().stream().map(BoardInfo::new).collect(Collectors.toList());
   }
 
   public BoardInfo createBoard(String name) {
-    return new BoardInfo(repo.save(new Board(name)));
+    return new BoardInfo(boardRepo.save(new Board(name)));
   }
 
   public Board findBoard(String id) {
-    return repo.findById(id).orElseThrow();
+    return boardRepo.findById(id).orElseThrow();
   }
 
-  public Board createCard(String boardId, String content, Status status, String username) {
-    var board = repo.findById(boardId).orElseThrow();
-    var card = new Card(content, status, username);
-    card.setLastModified(LocalDateTime.now());
+  public Card createCard(String boardId, String content, Status status, String username) {
+    var board = boardRepo.findById(boardId).orElseThrow();
+    var card = cardRepo.save(new Card(content, status, username));
     board.getCards().add(card);
-    return repo.save(board);
+    boardRepo.save(board);
+    return card;
   }
 
-  public void updateCard(String boardId, Card updatedCard) {
-    var board = repo.findById(boardId).orElseThrow();
-    // replace the updated card
-    board.setCards(board.getCards().stream().map(card -> {
-      if (card.getId().equals(updatedCard.getId())) {
-        updatedCard.setLastModified(LocalDateTime.now());
-        return updatedCard;
-      } else {
-        return card;
-      }
-    }).collect(Collectors.toList()));
-    repo.save(board);
+  public Card updateCard(Card updatedCard) {
+    return cardRepo.save(updatedCard);
   }
 
   public void deleteCard(String boardId, Card deletedCard) {
-    var board = repo.findById(boardId).orElseThrow();
-    board.setCards(board.getCards().stream().filter(card -> !card.getId().equals(deletedCard.getId()))
-        .collect(Collectors.toList()));
-    repo.save(board);
+    var board = boardRepo.findById(boardId).orElseThrow();
+    board.getCards().remove(deletedCard);
+    boardRepo.save(board);
+    cardRepo.delete(deletedCard);
   }
 }
