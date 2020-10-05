@@ -4,6 +4,7 @@ import {
   createCard,
   deleteCard,
   findBoard,
+  subscribeToUpdates,
   updateCard,
 } from '../generated/BoardEndpoint';
 import BoardModel from '../generated/com/vaadin/demo/collaboard/model/BoardModel';
@@ -11,17 +12,45 @@ import Status from '../generated/com/vaadin/demo/collaboard/model/Status';
 import Card from '../generated/com/vaadin/demo/collaboard/model/Card';
 import { appState } from './app-state';
 import CardModel from '../generated/com/vaadin/demo/collaboard/model/CardModel';
+import Actions from '../generated/com/vaadin/demo/collaboard/endpoints/CardUpdate/Actions';
 
 class BoardState {
   public board: Board = BoardModel.createEmptyValue();
-  public activeUserNames: string[] = [];
-
   constructor() {
     makeAutoObservable(this);
   }
 
   setBoard(board: Board) {
     this.board = board;
+
+    if (this.board.id) {
+      subscribeToUpdates(this.board.id, (update) => {
+        switch (update.action) {
+          case Actions.ADDED: {
+            runInAction(() => {
+              this.board.cards.push(update.card);
+            });
+            break;
+          }
+          case Actions.UPDATED: {
+            runInAction(() => {
+              this.board.cards = this.board.cards.map((card) =>
+                card.id === update.card.id ? update.card : card
+              );
+            });
+            break;
+          }
+          case Actions.DELETED: {
+            runInAction(() => {
+              this.board.cards = this.board.cards.filter(
+                (card) => card.id !== update.card.id
+              );
+            });
+            break;
+          }
+        }
+      });
+    }
   }
 
   addCard(card: Card) {
@@ -52,8 +81,7 @@ class BoardState {
       const createdCard = await createCard(
         this.board.id,
         newCardContent,
-        status,
-        appState.user.name
+        status
       );
       //Swap the temp card for the real deal
       runInAction(() => {
@@ -80,7 +108,7 @@ class BoardState {
         card.id === newCard.id ? newCard : card
       );
       try {
-        await updateCard(newCard);
+        await updateCard(newCard, this.board.id);
       } catch (e) {
         // undo update on failure
         this.board.cards = this.board.cards.map((card) =>

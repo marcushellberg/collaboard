@@ -3,17 +3,21 @@ package com.vaadin.demo.collaboard.endpoints;
 import java.util.List;
 import java.util.stream.Collectors;
 
+import com.vaadin.demo.collaboard.AppState;
 import com.vaadin.demo.collaboard.db.BoardRepo;
 import com.vaadin.demo.collaboard.db.CardRepo;
+import com.vaadin.demo.collaboard.endpoints.CardUpdate.Actions;
 import com.vaadin.demo.collaboard.model.Board;
 import com.vaadin.demo.collaboard.model.Card;
 import com.vaadin.demo.collaboard.model.Status;
 import com.vaadin.flow.server.connect.Endpoint;
 import com.vaadin.flow.server.connect.auth.AnonymousAllowed;
 
-import org.springframework.data.mongodb.core.MongoTemplate;
-
 import lombok.RequiredArgsConstructor;
+import reactor.core.publisher.DirectProcessor;
+import reactor.core.publisher.Flux;
+import reactor.core.publisher.FluxProcessor;
+import reactor.core.publisher.FluxSink;
 
 @Endpoint
 @AnonymousAllowed
@@ -21,7 +25,9 @@ import lombok.RequiredArgsConstructor;
 public class BoardEndpoint {
   final BoardRepo boardRepo;
   final CardRepo cardRepo;
-  final MongoTemplate template;
+  final AppState appState;
+  final FluxProcessor<CardUpdate, CardUpdate> updateProcessor = DirectProcessor.<CardUpdate>create().serialize();
+  final FluxSink<CardUpdate> updateSink = updateProcessor.sink();
 
   public List<BoardInfo> getBoards() {
     return boardRepo.findAll().stream().map(BoardInfo::new).collect(Collectors.toList());
@@ -41,38 +47,49 @@ public class BoardEndpoint {
     return boardRepo.findById(id).orElseThrow();
   }
 
-  public Card createCard(String boardId, String content, Status status, String username) {
+  public Card createCard(String boardId, String content, Status status) {
+    var user = appState.getCurrentUser();
     var board = boardRepo.findById(boardId).orElseThrow();
-    var card = cardRepo.save(new Card(content, status, username));
+    var card = cardRepo.save(new Card(content, status, user.getName()));
     board.getCards().add(card);
     boardRepo.save(board);
+    updateSink.next(new CardUpdate(card, Actions.ADDED, user.getName(), boardId));
     return card;
   }
 
-  public Card updateCard(Card updatedCard) {
-    return cardRepo.save(updatedCard);
+  public Card updateCard(Card updatedCard, String boardId) {
+    var user = appState.getCurrentUser();
+    var saved = cardRepo.save(updatedCard);
+    updateSink.next(new CardUpdate(saved, Actions.UPDATED, user.getName(), boardId));
+    return saved;
   }
 
   public void deleteCard(String boardId, Card deletedCard) {
+    var user = appState.getCurrentUser();
     var board = boardRepo.findById(boardId).orElseThrow();
     board.getCards().remove(deletedCard);
     boardRepo.save(board);
     cardRepo.delete(deletedCard);
+    updateSink.next(new CardUpdate(deletedCard, Actions.DELETED, user.getName(), boardId));
   }
 
-  // public Flux<BoardUpdate> subscribeToBoardUpdates(String boardId){
-
-  // }
-
-  public void joinBoard(String username, String boardId) {
+  public Flux<CardUpdate> subscribeToUpdates(String boardId) {
+    var userName = appState.getCurrentUser().getName();
+    return updateProcessor.filter(update -> {
+      // Only show updates for the right board and exclude any own events
+      return !update.getUsername().equals(userName) && update.getBoardId().equals(boardId);
+    });
   }
 
-  public void leaveBoard(String username, String boardId) {
+  public void joinBoard(String boardId) {
   }
 
-  public void lockCard(String username, String cardId) {
+  public void leaveBoard(String boardId) {
   }
 
-  public void releaseCard(String username, String cardId) {
+  public void lockCard(String cardId) {
+  }
+
+  public void releaseCard(String cardId) {
   }
 }

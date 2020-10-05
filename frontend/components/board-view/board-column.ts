@@ -52,10 +52,20 @@ export class BoardCard extends LitElement {
           placeholder="New card"
           .value=${this.newCardContent}
           @input=${this.handleNewCardInput}
+          @keydown=${this.shortcutListener}
         ></vaadin-text-area>
         <vaadin-button @click=${this.addNewCard}>Add</vaadin-button>
       </div>
     `;
+  }
+
+  shortcutListener(e: KeyboardEvent) {
+    if (
+      e.key === 'Enter' &&
+      (e.getModifierState('Shift') || e.getModifierState('Meta'))
+    ) {
+      this.addNewCard();
+    }
   }
 
   handleNewCardInput(e: { target: HTMLInputElement }) {
@@ -130,6 +140,7 @@ export class BoardCard extends LitElement {
       margin-top: 2em;
       display: flex;
       transition: opacity 0.25s ease-in-out;
+      transition-delay: 0.25s;
       opacity: 0;
       flex-direction: column;
       align-items: flex-end;

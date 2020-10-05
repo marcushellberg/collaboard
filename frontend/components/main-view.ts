@@ -264,6 +264,7 @@ export class MainView extends MobxLitElement {
         .board-tab .delete-button {
           opacity: 0;
           transform: opacity 0.25s;
+          cursor: pointer;
         }
 
         .board-tab:hover .delete-button {
