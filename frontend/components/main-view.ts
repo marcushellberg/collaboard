@@ -21,6 +21,7 @@ import { CSSModule } from '@vaadin/flow-frontend/css-utils';
 import { appState } from '../state/app-state';
 import { MobxLitElement } from '@adobe/lit-mobx';
 import { boardState } from '../state/board-state';
+import { nothing } from 'lit-html';
 
 @customElement('main-view')
 export class MainView extends MobxLitElement {
@@ -33,7 +34,7 @@ export class MainView extends MobxLitElement {
 
     return html`
       <vaadin-app-layout primary-section="drawer">
-        <header slot="navbar" theme="dark">
+        <header slot="navbar">
           <vaadin-drawer-toggle></vaadin-drawer-toggle>
           <h1>${board.name ? board.name : 'Create or select a board'}</h1>
           <div class="spinner ${classMap({
@@ -62,12 +63,13 @@ export class MainView extends MobxLitElement {
                     (board) => html`
                       <vaadin-tab class="board-tab">
                         <a href="/${board.id}" tabindex="-1">${board.name}</a>
+                        ${this.getActiveUsers(board.id)}
                         <vaadin-button
                           class="delete-button"
                           theme="tertiary icon"
                           @click=${() => this.deleteBoard(board.id)}
                         >
-                          <iron-icon icon="vaadin:close-circle-o"></iron-icon>
+                          <iron-icon icon="vaadin:trash"></iron-icon>
                         </vaadin-button>
                       </vaadin-tab>
                     `
@@ -97,6 +99,26 @@ export class MainView extends MobxLitElement {
         this.dismissError
       } ?hidden=${!appState.error}>${appState.error}</div>
     `;
+  }
+
+  private getActiveUsers(boardId: string) {
+    const boardState = appState.participantInfo.find(
+      (p) => p.boardId === boardId
+    );
+    if (boardState) {
+      const displayUsers = boardState.participants.slice(0, 2);
+      const additionalUsers = boardState.participants.length - 2;
+      return html`
+        <div class="active-users">
+          ${displayUsers.map(
+            (username) => html`<a-avataaar identifier=${username}></a-avataaar>`
+          )}
+          ${additionalUsers > 0 ? ` +${additionalUsers}` : ''}
+        </div>
+      `;
+    } else {
+      return nothing;
+    }
   }
 
   private updateBoardName(e: { target: HTMLInputElement }) {
@@ -269,6 +291,15 @@ export class MainView extends MobxLitElement {
 
         .board-tab:hover .delete-button {
           opacity: 1;
+        }
+
+        .active-users {
+          display: flex;
+          align-items: center;
+        }
+
+        .active-users a-avataaar {
+          width: 24px;
         }
       `,
     ];

@@ -1,5 +1,10 @@
 import { MobxLitElement } from '@adobe/lit-mobx';
-import { AfterEnterObserver, RouterLocation } from '@vaadin/router';
+import {
+  AfterEnterObserver,
+  AfterLeaveObserver,
+  BeforeLeaveObserver,
+  RouterLocation,
+} from '@vaadin/router';
 import { css, customElement, html, internalProperty } from 'lit-element';
 import { boardState } from '../../state/board-state';
 
@@ -14,7 +19,9 @@ import {
 } from './card-events';
 
 @customElement('board-view')
-export class BoardView extends MobxLitElement implements AfterEnterObserver {
+export class BoardView
+  extends MobxLitElement
+  implements AfterEnterObserver, AfterLeaveObserver {
   @internalProperty()
   private newStatusName = '';
 
@@ -68,6 +75,10 @@ export class BoardView extends MobxLitElement implements AfterEnterObserver {
   onAfterEnter(location: RouterLocation) {
     const boardId = location.params.boardId;
     boardState.findBoard(boardId.toString());
+  }
+
+  onAfterLeave() {
+    boardState.leaveBoard();
   }
 
   static styles = css`

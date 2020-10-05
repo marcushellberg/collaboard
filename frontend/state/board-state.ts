@@ -4,7 +4,10 @@ import {
   createCard,
   deleteCard,
   findBoard,
-  subscribeToUpdates,
+  joinBoard,
+  leaveBoard,
+  lockCard,
+  releaseCard,
   updateCard,
 } from '../generated/BoardEndpoint';
 import BoardModel from '../generated/com/vaadin/demo/collaboard/model/BoardModel';
@@ -12,49 +15,66 @@ import Status from '../generated/com/vaadin/demo/collaboard/model/Status';
 import Card from '../generated/com/vaadin/demo/collaboard/model/Card';
 import { appState } from './app-state';
 import CardModel from '../generated/com/vaadin/demo/collaboard/model/CardModel';
-import Actions from '../generated/com/vaadin/demo/collaboard/endpoints/dto/CardUpdate/Actions';
+import { Subscription } from '@vaadin/flow-frontend/Connect';
+import ContentUpdate from '../generated/com/vaadin/demo/collaboard/endpoints/dto/ContentUpdate';
+import Action from '../generated/com/vaadin/demo/collaboard/endpoints/dto/ContentUpdate/Action';
 
 class BoardState {
   public board: Board = BoardModel.createEmptyValue();
+  private boardSubscription?: Subscription;
   constructor() {
     makeAutoObservable(this);
   }
 
-  setBoard(board: Board) {
+  async setBoard(board: Board) {
     this.board = board;
 
     if (this.board.id) {
-      subscribeToUpdates(this.board.id, (update) => {
-        switch (update.action) {
-          case Actions.ADDED: {
-            runInAction(() => {
-              this.board.cards.push(update.card);
-            });
-            break;
-          }
-          case Actions.UPDATED: {
-            runInAction(() => {
-              this.board.cards = this.board.cards.map((card) =>
-                card.id === update.card.id ? update.card : card
-              );
-            });
-            break;
-          }
-          case Actions.DELETED: {
-            runInAction(() => {
-              this.board.cards = this.board.cards.filter(
-                (card) => card.id !== update.card.id
-              );
-            });
-            break;
-          }
-        }
-      });
+      await joinBoard(this.board.id);
     }
+  }
+
+  handleCardUpdate(update: ContentUpdate) {
+    switch (update.action) {
+      case Action.CARDADDED: {
+        runInAction(() => {
+          this.board.cards.push(update.card);
+        });
+        break;
+      }
+      case Action.CARDUPDATED: {
+        runInAction(() => {
+          this.board.cards = this.board.cards.map((card) =>
+            card.id === update.card.id ? update.card : card
+          );
+        });
+        break;
+      }
+      case Action.CARDDELETED: {
+        runInAction(() => {
+          this.board.cards = this.board.cards.filter(
+            (card) => card.id !== update.card.id
+          );
+        });
+        break;
+      }
+    }
+  }
+
+  async leaveBoard() {
+    await leaveBoard(this.board.id);
   }
 
   addCard(card: Card) {
     this.board.cards.push(card);
+  }
+
+  lockCard(card: Card) {
+    lockCard(this.board.id, card.id);
+  }
+
+  relaseCard(card: Card) {
+    releaseCard(this.board.id, card.id);
   }
 
   async findBoard(id: string) {
@@ -78,11 +98,7 @@ class BoardState {
     this.addCard(tempCard);
 
     try {
-      const createdCard = await createCard(
-        this.board.id,
-        newCardContent,
-        status
-      );
+      const createdCard = await createCard(this.board, newCardContent, status);
       //Swap the temp card for the real deal
       runInAction(() => {
         this.board.cards = this.board.cards.map((card) =>
@@ -108,7 +124,7 @@ class BoardState {
         card.id === newCard.id ? newCard : card
       );
       try {
-        await updateCard(newCard, this.board.id);
+        await updateCard(this.board, newCard);
       } catch (e) {
         // undo update on failure
         this.board.cards = this.board.cards.map((card) =>
@@ -125,7 +141,7 @@ class BoardState {
     appState.setLoading(true);
     this.board.cards = this.board.cards.filter((c) => c.id !== card.id);
     try {
-      await deleteCard(this.board.id, card);
+      await deleteCard(this.board, card);
     } catch (e) {
       //undo delete on failure
       this.board.cards.push(card);
