@@ -1,4 +1,4 @@
-package com.vaadin.demo.collaboard.endpoints;
+package com.vaadin.demo.collaboard.endpoints.dto;
 
 import com.vaadin.demo.collaboard.model.Card;
 

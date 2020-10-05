@@ -1,6 +1,4 @@
-package com.vaadin.demo.collaboard.endpoints;
-
-import java.util.List;
+package com.vaadin.demo.collaboard.endpoints.dto;
 
 import com.vaadin.demo.collaboard.model.Board;
 
@@ -12,9 +10,8 @@ import lombok.NoArgsConstructor;
 public class BoardInfo {
   private String id;
   private String name;
-  private List<String> activeUsernames = List.of();
 
-  BoardInfo(Board board) {
+  public BoardInfo(Board board) {
     this.id = board.getId();
     this.name = board.getName();
   }

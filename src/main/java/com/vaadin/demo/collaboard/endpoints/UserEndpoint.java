@@ -28,14 +28,17 @@ public class UserEndpoint {
     return user;
   }
 
+  public void logout() {
+    appState.setCurrentUser(null);
+  }
+
   public List<User> findAllUsers() {
     return repo.findAll();
   }
 
   public void markVisited(User user, Board board) {
-    repo.findById(user.getId()).ifPresent(usr -> {
-      usr.getLastVisited().put(board.getId(), LocalDateTime.now());
-      repo.save(usr);
-    });
+    var dbUser = repo.findById(user.getId()).orElseThrow();
+    dbUser.getLastVisited().put(board.getId(), LocalDateTime.now());
+    repo.save(dbUser);
   }
 }

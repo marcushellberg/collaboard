@@ -12,7 +12,7 @@ import Status from '../generated/com/vaadin/demo/collaboard/model/Status';
 import Card from '../generated/com/vaadin/demo/collaboard/model/Card';
 import { appState } from './app-state';
 import CardModel from '../generated/com/vaadin/demo/collaboard/model/CardModel';
-import Actions from '../generated/com/vaadin/demo/collaboard/endpoints/CardUpdate/Actions';
+import Actions from '../generated/com/vaadin/demo/collaboard/endpoints/dto/CardUpdate/Actions';
 
 class BoardState {
   public board: Board = BoardModel.createEmptyValue();

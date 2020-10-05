@@ -6,8 +6,8 @@ import {
   getBoards,
 } from '../generated/BoardEndpoint';
 import UserModel from '../generated/com/vaadin/demo/collaboard/model/UserModel';
-import { createOrLogin } from '../generated/UserEndpoint';
-import BoardInfo from '../generated/com/vaadin/demo/collaboard/endpoints/BoardInfo';
+import { createOrLogin, logout } from '../generated/UserEndpoint';
+import BoardInfo from '../generated/com/vaadin/demo/collaboard/endpoints/dto/BoardInfo';
 import { boardState } from './board-state';
 import BoardModel from '../generated/com/vaadin/demo/collaboard/model/BoardModel';
 
@@ -53,9 +53,10 @@ class AppState {
     }
   }
 
-  logout() {
+  async logout() {
     this.setUser(UserModel.createEmptyValue());
     localStorage.removeItem(USERNAME_KEY);
+    await logout();
   }
 
   get isUserKnown() {
