@@ -1,10 +1,4 @@
-import {
-  css,
-  customElement,
-  html,
-  internalProperty,
-  LitElement,
-} from 'lit-element';
+import { css, customElement, html, internalProperty } from 'lit-element';
 import '@vaadin/vaadin-app-layout/theme/lumo/vaadin-app-layout';
 // @ts-ignore
 import { AppLayoutElement } from '@vaadin/vaadin-app-layout/src/vaadin-app-layout';

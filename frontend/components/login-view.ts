@@ -3,7 +3,6 @@ import { css, customElement, html, internalProperty } from 'lit-element';
 import '@vaadin/vaadin-text-field';
 import '@vaadin/vaadin-button';
 import User from '../generated/com/vaadin/demo/collaboard/model/User';
-import { findAllUsers } from '../generated/UserEndpoint';
 import { appState } from '../state/app-state';
 
 @customElement('login-view')

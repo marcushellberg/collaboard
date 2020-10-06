@@ -3,7 +3,6 @@ import {
   customElement,
   html,
   internalProperty,
-  LitElement,
   property,
 } from 'lit-element';
 import Card from '../../generated/com/vaadin/demo/collaboard/model/Card';

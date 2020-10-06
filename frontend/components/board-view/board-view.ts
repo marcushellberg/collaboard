@@ -2,11 +2,9 @@ import { MobxLitElement } from '@adobe/lit-mobx';
 import {
   AfterEnterObserver,
   AfterLeaveObserver,
-  BeforeLeaveObserver,
   RouterLocation,
 } from '@vaadin/router';
 import { css, customElement, html } from 'lit-element';
-
 import '@vaadin/vaadin-text-field';
 import '@vaadin/vaadin-button';
 import '@vaadin/vaadin-text-field/vaadin-text-area';
