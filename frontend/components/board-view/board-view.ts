@@ -5,8 +5,7 @@ import {
   BeforeLeaveObserver,
   RouterLocation,
 } from '@vaadin/router';
-import { css, customElement, html, internalProperty } from 'lit-element';
-import { boardState } from '../../state/board-state';
+import { css, customElement, html } from 'lit-element';
 
 import '@vaadin/vaadin-text-field';
 import '@vaadin/vaadin-button';
@@ -17,14 +16,12 @@ import {
   CardDeletedEvent,
   CardUpdatedEvent,
 } from './card-events';
+import { appState } from '../../state/app-state';
 
 @customElement('board-view')
 export class BoardView
   extends MobxLitElement
   implements AfterEnterObserver, AfterLeaveObserver {
-  @internalProperty()
-  private newStatusName = '';
-
   constructor() {
     super();
 
@@ -43,10 +40,10 @@ export class BoardView
   }
 
   render() {
-    const { board } = boardState;
+    const { board } = appState;
 
     return html`
-      ${board?.statuses.map(
+      ${board.statuses.map(
         (status) => html`
           <board-column
             .status=${status}
@@ -61,24 +58,24 @@ export class BoardView
 
   handleCardCreated(e: CardCreatedEvent) {
     const { content, status } = e.detail;
-    boardState.createCard(content, status);
+    appState.createCard(content, status);
   }
 
   handleCardUpdate(e: CardUpdatedEvent) {
-    boardState.updateCard(e.detail);
+    appState.updateCard(e.detail);
   }
 
   handleCardDelete(e: CardDeletedEvent) {
-    boardState.deleteCard(e.detail);
+    appState.deleteCard(e.detail);
   }
 
   onAfterEnter(location: RouterLocation) {
     const boardId = location.params.boardId;
-    boardState.findBoard(boardId.toString());
+    appState.findBoard(boardId.toString());
   }
 
   onAfterLeave() {
-    boardState.leaveBoard();
+    appState.leaveBoard();
   }
 
   static styles = css`

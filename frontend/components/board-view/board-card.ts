@@ -1,29 +1,62 @@
 import { css, customElement, html, LitElement, property } from 'lit-element';
 import Card from '../../generated/com/vaadin/demo/collaboard/model/Card';
+import { appState } from '../../state/app-state';
 import { CardDeletedEvent, CardUpdatedEvent } from './card-events';
 
 @customElement('board-card')
 export class BoardCard extends LitElement {
   @property({ type: Object })
   card!: Card;
-
-  render() {
-    return html`
-      <header>
-        <span>By: ${this.card.creator}</span
-        ><button @click=${this.deleteCard}>Delete</button>
-      </header>
-      <textarea
-        .value=${this.card.content}
-        @change=${this.updateCard}
-      ></textarea>
-    `;
-  }
+  @property()
+  lockedBy = '';
 
   constructor() {
     super();
     this.addEventListener('dragstart', this.handleDragStart);
     this.addEventListener('dragend', this.handleDragEnd);
+  }
+
+  render() {
+    return html`
+      <header @mouseover=${this.addDraggable} @mouseout=${this.removeDraggable}>
+        <span>By: ${this.card.creator}</span
+        ><button @click=${this.deleteCard}>Delete</button>
+      </header>
+      ${this.getContentComponent()}
+    `;
+  }
+
+  getContentComponent() {
+    if (!this.lockedBy || this.lockedBy === appState.user.name) {
+      return html` <textarea
+        class="content"
+        .value=${this.card.content}
+        @change=${this.updateCard}
+        @focus=${this.lockCard}
+        @blur=${this.releaseCard}
+      ></textarea>`;
+    } else {
+      return html`
+        <div class="content">${this.card.content}</div>
+        <a-avataaar class="avatar" identifier=${this.lockedBy}></a-avataaar>
+      `;
+    }
+  }
+
+  addDraggable() {
+    this.setAttribute('draggable', 'true');
+  }
+
+  removeDraggable() {
+    this.removeAttribute('draggable');
+  }
+
+  lockCard() {
+    appState.lockCard(this.card);
+  }
+
+  releaseCard() {
+    appState.relaseCard(this.card);
   }
 
   updateCard(e: { target: HTMLInputElement }) {
@@ -49,6 +82,7 @@ export class BoardCard extends LitElement {
 
   static styles = css`
     :host {
+      position: relative;
       display: flex;
       flex-direction: column;
       position: relative;
@@ -84,7 +118,7 @@ export class BoardCard extends LitElement {
       display: block;
     }
 
-    textarea {
+    .content {
       flex: 1;
       box-sizing: border-box;
       height: 100%;
@@ -101,6 +135,13 @@ export class BoardCard extends LitElement {
 
     textarea:focus {
       background: var(--lumo-base-color);
+    }
+
+    .avatar {
+      position: absolute;
+      width: 24px;
+      bottom: 0;
+      right: var(--lumo-space-s);
     }
   `;
 }

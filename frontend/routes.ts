@@ -6,7 +6,6 @@ import './components/empty-view';
 import './components/login-view';
 import { autorun } from 'mobx';
 import { appState } from './state/app-state';
-import { boardState } from './state/board-state';
 
 const REDIRECT_PATH_KEY = 'login-redirect-path';
 const routes: Route[] = [
@@ -47,9 +46,10 @@ const routes: Route[] = [
 ];
 
 autorun(() => {
-  if (boardState.board.id) {
-    Router.go('/' + boardState.board.id);
-    document.title = boardState.board.name;
+  const board = appState.board;
+  if (board.id) {
+    Router.go('/' + board.id);
+    document.title = board.name;
   } else {
     Router.go('/');
     document.title = 'CollaBoard';

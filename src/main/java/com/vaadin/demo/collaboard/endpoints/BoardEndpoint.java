@@ -132,6 +132,7 @@ public class BoardEndpoint {
   }
 
   private void sendparticipantInfo(Map<String, ParticipantInfo> participantInfoMap) {
-    participantUpdateSink.next(new ParticipantInfoWrapper(participantInfoMap.values()));
+    var wrapper = new ParticipantInfoWrapper(participantInfoMap.values());
+    participantUpdateSink.next(wrapper);
   }
 }

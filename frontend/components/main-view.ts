@@ -20,7 +20,6 @@ import { classMap } from 'lit-html/directives/class-map.js';
 import { CSSModule } from '@vaadin/flow-frontend/css-utils';
 import { appState } from '../state/app-state';
 import { MobxLitElement } from '@adobe/lit-mobx';
-import { boardState } from '../state/board-state';
 import { nothing } from 'lit-html';
 
 @customElement('main-view')
@@ -29,8 +28,7 @@ export class MainView extends MobxLitElement {
   private newBoardName = '';
 
   render() {
-    const { boards, user } = appState;
-    const { board } = boardState;
+    const { boards, user, board } = appState;
 
     return html`
       <vaadin-app-layout primary-section="drawer">
@@ -39,7 +37,7 @@ export class MainView extends MobxLitElement {
           <h1>${board.name ? board.name : 'Create or select a board'}</h1>
           <div class="spinner ${classMap({
             active: appState.loading,
-          })}" >Loading.</div>
+          })}" >Loading</div>
           <a href="/logout">Log out</a>
           <a-avataaar identifier=${user.name}></a-avataaar>
         </header>
@@ -67,7 +65,7 @@ export class MainView extends MobxLitElement {
                         <vaadin-button
                           class="delete-button"
                           theme="tertiary icon"
-                          @click=${() => this.deleteBoard(board.id)}
+                          @click=${() => appState.deleteBoard(board.id)}
                         >
                           <iron-icon icon="vaadin:trash"></iron-icon>
                         </vaadin-button>
@@ -125,10 +123,6 @@ export class MainView extends MobxLitElement {
     this.newBoardName = e.target.value;
   }
 
-  private deleteBoard(boardId: string) {
-    appState.deleteBoard(boardId);
-  }
-
   private handleEnterSumbit(e: KeyboardEvent) {
     if (e.key === 'Enter') {
       this.addBoard();
@@ -143,9 +137,9 @@ export class MainView extends MobxLitElement {
   }
 
   private getIndexOfSelectedBoard(): number {
-    if (boardState.board) {
+    if (appState.board) {
       return appState.boards.findIndex(
-        (board) => location.pathname === '/' + boardState.board.id
+        (board) => location.pathname === '/' + board.id
       );
     }
     return 0;

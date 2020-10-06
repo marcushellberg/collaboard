@@ -46,11 +46,6 @@ export class EmptyView extends MobxLitElement {
     appState.login(this.name);
   }
 
-  async connectedCallback() {
-    super.connectedCallback();
-    this.users = await findAllUsers();
-  }
-
   static styles = css`
     :host {
       display: flex;

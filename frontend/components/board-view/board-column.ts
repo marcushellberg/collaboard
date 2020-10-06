@@ -12,7 +12,7 @@ import './board-card';
 import '@vaadin/vaadin-button';
 import '@vaadin/vaadin-text-field/vaadin-text-area';
 import { CardCreatedEvent, CardUpdatedEvent } from './card-events';
-import CardModel from '../../generated/com/vaadin/demo/collaboard/model/CardModel';
+import { appState } from '../../state/app-state';
 
 @customElement('board-column')
 export class BoardCard extends LitElement {
@@ -42,7 +42,9 @@ export class BoardCard extends LitElement {
             <board-card
               .card=${card}
               ?readonly=${card.id === 'pending'}
-              draggable="true"
+              .lockedBy=${appState.cardLocks.find(
+                (lock) => lock.cardId === card.id
+              )?.username || ''}
             ></board-card>
           `
         )}
