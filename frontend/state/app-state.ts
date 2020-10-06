@@ -1,5 +1,5 @@
 import User from '../generated/com/vaadin/demo/collaboard/model/User';
-import { makeAutoObservable, runInAction } from 'mobx';
+import { autorun, makeAutoObservable, runInAction } from 'mobx';
 import {
   createBoard,
   deleteBoard,
@@ -27,9 +27,11 @@ import Board from '../generated/com/vaadin/demo/collaboard/model/Board';
 import Card from '../generated/com/vaadin/demo/collaboard/model/Card';
 import CardModel from '../generated/com/vaadin/demo/collaboard/model/CardModel';
 import Status from '../generated/com/vaadin/demo/collaboard/model/Status';
+import CardLock from '../generated/com/vaadin/demo/collaboard/endpoints/dto/ParticipantInfo/CardLock';
 
 const USERNAME_KEY = 'username';
 export class AppState {
+  id: number = Math.random();
   user: User = UserModel.createEmptyValue();
   board: Board = BoardModel.createEmptyValue(); // current board
   boards: BoardInfo[] = [];
@@ -254,8 +256,10 @@ export class AppState {
   private subscribeToParticipantUpdates() {
     this.subscriptions.push(
       subscribeToParticipantUpdates(({ participantInfo }) => {
-        console.log('Participant info update received', participantInfo);
-        runInAction(() => (this.participantInfo = participantInfo));
+        runInAction(() => {
+          console.log('Participant info update received', participantInfo);
+          this.participantInfo = participantInfo;
+        });
       })
     );
   }

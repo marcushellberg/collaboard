@@ -125,6 +125,7 @@ export class BoardCard extends LitElement {
       width: 100%;
       border: 0;
       padding: var(--lumo-space-s);
+      margin: 0;
       border: none;
       resize: none;
       background: var(--lumo-shade-5pct);

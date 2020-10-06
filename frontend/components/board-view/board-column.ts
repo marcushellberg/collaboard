@@ -13,9 +13,10 @@ import '@vaadin/vaadin-button';
 import '@vaadin/vaadin-text-field/vaadin-text-area';
 import { CardCreatedEvent, CardUpdatedEvent } from './card-events';
 import { appState } from '../../state/app-state';
+import { MobxLitElement } from '@adobe/lit-mobx';
 
 @customElement('board-column')
-export class BoardCard extends LitElement {
+export class BoardCard extends MobxLitElement {
   @property({ type: Object })
   status!: Status;
   @property({ type: Array })
@@ -35,7 +36,6 @@ export class BoardCard extends LitElement {
   render() {
     return html`
       <div class="status">${this.status.name}</div>
-
       <div class="cards">
         ${this.cards.map(
           (card) => html`
