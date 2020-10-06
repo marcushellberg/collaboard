@@ -235,20 +235,19 @@ export class AppState {
     }
   }
 
-  get cardLocks() {
-    const cardLocks =
-      this.participantInfo.find((p) => p.boardId === this.board.id)
-        ?.lockedCards || [];
-    console.log('Card locks', cardLocks);
-    return cardLocks;
-  }
-
   lockCard(card: Card) {
     lockCard(this.board.id, card.id);
   }
 
   relaseCard(card: Card) {
     releaseCard(this.board.id, card.id);
+  }
+
+  get cardLocks() {
+    const cardLocks =
+      this.participantInfo.find((p) => p.boardId === this.board.id)
+        ?.lockedCards || [];
+    return cardLocks;
   }
 
   // Subscribe to updates from the server
